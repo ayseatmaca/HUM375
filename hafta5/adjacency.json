@@ -1,0 +1,548 @@
+{
+  "Adana": [
+    "Hatay",
+    "Kahramanmaraş",
+    "Kayseri",
+    "Mersin",
+    "Niğde",
+    "Osmaniye"
+  ],
+  "Adıyaman": [
+    "Diyarbakır",
+    "Gaziantep",
+    "Kahramanmaraş",
+    "Malatya",
+    "Şanlıurfa"
+  ],
+  "Afyon": [
+    "Denizli",
+    "Eskişehir",
+    "Isparta",
+    "Konya",
+    "Kütahya",
+    "Uşak"
+  ],
+  "Ağrı": [
+    "Bitlis",
+    "Erzurum",
+    "Iğdır",
+    "Kars",
+    "Muş",
+    "Van"
+  ],
+  "Aksaray": [
+    "Ankara",
+    "Konya",
+    "Kırşehir",
+    "Nevşehir",
+    "Niğde"
+  ],
+  "Amasya": [
+    "Samsun",
+    "Tokat",
+    "Yozgat",
+    "Çorum"
+  ],
+  "Ankara": [
+    "Aksaray",
+    "Bolu",
+    "Eskişehir",
+    "Konya",
+    "Kırıkkale",
+    "Kırşehir",
+    "Çankırı"
+  ],
+  "Antalya": [
+    "Burdur",
+    "Isparta",
+    "Karaman",
+    "Konya",
+    "Mersin",
+    "Muğla"
+  ],
+  "Ardahan": [
+    "Artvin",
+    "Erzurum",
+    "Kars"
+  ],
+  "Artvin": [
+    "Ardahan",
+    "Erzurum",
+    "Rize"
+  ],
+  "Aydın": [
+    "Denizli",
+    "Manisa",
+    "Muğla",
+    "İzmir"
+  ],
+  "Balıkesir": [
+    "Bursa",
+    "Kütahya",
+    "Manisa",
+    "Çanakkale",
+    "İzmir"
+  ],
+  "Bartın": [
+    "Karabük",
+    "Kastamonu",
+    "Zonguldak"
+  ],
+  "Batman": [
+    "Bitlis",
+    "Diyarbakır",
+    "Mardin",
+    "Siirt"
+  ],
+  "Bayburt": [
+    "Erzincan",
+    "Erzurum",
+    "Gümüşhane",
+    "Rize",
+    "Trabzon"
+  ],
+  "Bilecik": [
+    "Bolu",
+    "Bursa",
+    "Eskişehir",
+    "Kütahya",
+    "Sakarya"
+  ],
+  "Bingöl": [
+    "Diyarbakır",
+    "Elazığ",
+    "Erzincan",
+    "Erzurum",
+    "Muş",
+    "Tunceli"
+  ],
+  "Bitlis": [
+    "Ağrı",
+    "Batman",
+    "Muş",
+    "Siirt",
+    "Van"
+  ],
+  "Bolu": [
+    "Ankara",
+    "Bilecik",
+    "Düzce",
+    "Eskişehir",
+    "Karabük",
+    "Sakarya"
+  ],
+  "Burdur": [
+    "Antalya",
+    "Denizli",
+    "Isparta",
+    "Muğla"
+  ],
+  "Bursa": [
+    "Balıkesir",
+    "Bilecik",
+    "Kocaeli",
+    "Kütahya",
+    "Sakarya",
+    "Yalova"
+  ],
+  "Çanakkale": [
+    "Balıkesir",
+    "Edirne",
+    "Tekirdağ"
+  ],
+  "Çankırı": [
+    "Ankara",
+    "Karabük",
+    "Kastamonu",
+    "Çorum"
+  ],
+  "Çorum": [
+    "Amasya",
+    "Kastamonu",
+    "Kırıkkale",
+    "Samsun",
+    "Sinop",
+    "Yozgat",
+    "Çankırı"
+  ],
+  "Denizli": [
+    "Afyon",
+    "Aydın",
+    "Burdur",
+    "Manisa",
+    "Muğla",
+    "Uşak"
+  ],
+  "Diyarbakır": [
+    "Adıyaman",
+    "Batman",
+    "Bingöl",
+    "Elazığ",
+    "Malatya",
+    "Mardin",
+    "Muş",
+    "Şanlıurfa"
+  ],
+  "Düzce": [
+    "Bolu",
+    "Sakarya",
+    "Zonguldak"
+  ],
+  "Edirne": [
+    "Kırklareli",
+    "Tekirdağ",
+    "Çanakkale"
+  ],
+  "Elazığ": [
+    "Bingöl",
+    "Diyarbakır",
+    "Erzincan",
+    "Malatya",
+    "Tunceli"
+  ],
+  "Erzincan": [
+    "Bayburt",
+    "Bingöl",
+    "Elazığ",
+    "Erzurum",
+    "Giresun",
+    "Gümüşhane",
+    "Malatya",
+    "Sivas",
+    "Tunceli"
+  ],
+  "Erzurum": [
+    "Ardahan",
+    "Artvin",
+    "Ağrı",
+    "Bayburt",
+    "Bingöl",
+    "Erzincan",
+    "Kars",
+    "Muş",
+    "Rize"
+  ],
+  "Eskişehir": [
+    "Afyon",
+    "Ankara",
+    "Bilecik",
+    "Bolu",
+    "Konya",
+    "Kütahya"
+  ],
+  "Gaziantep": [
+    "Adıyaman",
+    "Hatay",
+    "Kahramanmaraş",
+    "Kilis",
+    "Osmaniye",
+    "Şanlıurfa"
+  ],
+  "Giresun": [
+    "Erzincan",
+    "Gümüşhane",
+    "Ordu",
+    "Sivas",
+    "Trabzon"
+  ],
+  "Gümüşhane": [
+    "Bayburt",
+    "Erzincan",
+    "Giresun",
+    "Trabzon"
+  ],
+  "Hakkari": [
+    "Van",
+    "Şırnak"
+  ],
+  "Hatay": [
+    "Adana",
+    "Gaziantep",
+    "Osmaniye"
+  ],
+  "Iğdır": [
+    "Ağrı",
+    "Kars"
+  ],
+  "Isparta": [
+    "Afyon",
+    "Antalya",
+    "Burdur",
+    "Konya"
+  ],
+  "İstanbul": [
+    "Kocaeli",
+    "Tekirdağ"
+  ],
+  "İzmir": [
+    "Aydın",
+    "Balıkesir",
+    "Manisa"
+  ],
+  "Kahramanmaraş": [
+    "Adana",
+    "Adıyaman",
+    "Gaziantep",
+    "Kayseri",
+    "Malatya",
+    "Osmaniye",
+    "Sivas"
+  ],
+  "Karabük": [
+    "Bartın",
+    "Bolu",
+    "Kastamonu",
+    "Zonguldak",
+    "Çankırı"
+  ],
+  "Karaman": [
+    "Antalya",
+    "Konya",
+    "Mersin"
+  ],
+  "Kars": [
+    "Ardahan",
+    "Ağrı",
+    "Erzurum",
+    "Iğdır"
+  ],
+  "Kastamonu": [
+    "Bartın",
+    "Karabük",
+    "Sinop",
+    "Çankırı",
+    "Çorum"
+  ],
+  "Kayseri": [
+    "Adana",
+    "Kahramanmaraş",
+    "Nevşehir",
+    "Niğde",
+    "Sivas",
+    "Yozgat"
+  ],
+  "Kilis": [
+    "Gaziantep"
+  ],
+  "Kırıkkale": [
+    "Ankara",
+    "Kırşehir",
+    "Yozgat",
+    "Çorum"
+  ],
+  "Kırklareli": [
+    "Edirne",
+    "Tekirdağ"
+  ],
+  "Kırşehir": [
+    "Aksaray",
+    "Ankara",
+    "Kırıkkale",
+    "Nevşehir",
+    "Yozgat"
+  ],
+  "Kocaeli": [
+    "Bursa",
+    "Sakarya",
+    "Yalova",
+    "İstanbul"
+  ],
+  "Konya": [
+    "Afyon",
+    "Aksaray",
+    "Ankara",
+    "Antalya",
+    "Eskişehir",
+    "Isparta",
+    "Karaman",
+    "Mersin",
+    "Niğde"
+  ],
+  "Kütahya": [
+    "Afyon",
+    "Balıkesir",
+    "Bilecik",
+    "Bursa",
+    "Eskişehir",
+    "Manisa",
+    "Uşak"
+  ],
+  "Malatya": [
+    "Adıyaman",
+    "Diyarbakır",
+    "Elazığ",
+    "Erzincan",
+    "Kahramanmaraş",
+    "Sivas"
+  ],
+  "Manisa": [
+    "Aydın",
+    "Balıkesir",
+    "Denizli",
+    "Kütahya",
+    "Uşak",
+    "İzmir"
+  ],
+  "Mardin": [
+    "Batman",
+    "Diyarbakır",
+    "Şanlıurfa",
+    "Şırnak"
+  ],
+  "Mersin": [
+    "Adana",
+    "Antalya",
+    "Karaman",
+    "Konya",
+    "Niğde"
+  ],
+  "Muğla": [
+    "Antalya",
+    "Aydın",
+    "Burdur",
+    "Denizli"
+  ],
+  "Muş": [
+    "Ağrı",
+    "Bingöl",
+    "Bitlis",
+    "Diyarbakır",
+    "Erzurum"
+  ],
+  "Nevşehir": [
+    "Aksaray",
+    "Kayseri",
+    "Kırşehir",
+    "Niğde",
+    "Yozgat"
+  ],
+  "Niğde": [
+    "Adana",
+    "Aksaray",
+    "Kayseri",
+    "Konya",
+    "Mersin",
+    "Nevşehir"
+  ],
+  "Ordu": [
+    "Giresun",
+    "Samsun",
+    "Sivas",
+    "Tokat"
+  ],
+  "Osmaniye": [
+    "Adana",
+    "Gaziantep",
+    "Hatay",
+    "Kahramanmaraş"
+  ],
+  "Rize": [
+    "Artvin",
+    "Bayburt",
+    "Erzurum",
+    "Trabzon"
+  ],
+  "Sakarya": [
+    "Bilecik",
+    "Bolu",
+    "Bursa",
+    "Düzce",
+    "Kocaeli"
+  ],
+  "Samsun": [
+    "Amasya",
+    "Ordu",
+    "Sinop",
+    "Tokat",
+    "Çorum"
+  ],
+  "Şanlıurfa": [
+    "Adıyaman",
+    "Diyarbakır",
+    "Gaziantep",
+    "Mardin"
+  ],
+  "Siirt": [
+    "Batman",
+    "Bitlis",
+    "Van",
+    "Şırnak"
+  ],
+  "Sinop": [
+    "Kastamonu",
+    "Samsun",
+    "Çorum"
+  ],
+  "Şırnak": [
+    "Hakkari",
+    "Mardin",
+    "Siirt",
+    "Van"
+  ],
+  "Sivas": [
+    "Erzincan",
+    "Giresun",
+    "Kahramanmaraş",
+    "Kayseri",
+    "Malatya",
+    "Ordu",
+    "Tokat",
+    "Yozgat"
+  ],
+  "Tekirdağ": [
+    "Edirne",
+    "Kırklareli",
+    "Çanakkale",
+    "İstanbul"
+  ],
+  "Tokat": [
+    "Amasya",
+    "Ordu",
+    "Samsun",
+    "Sivas",
+    "Yozgat"
+  ],
+  "Trabzon": [
+    "Bayburt",
+    "Giresun",
+    "Gümüşhane",
+    "Rize"
+  ],
+  "Tunceli": [
+    "Bingöl",
+    "Elazığ",
+    "Erzincan"
+  ],
+  "Uşak": [
+    "Afyon",
+    "Denizli",
+    "Kütahya",
+    "Manisa"
+  ],
+  "Van": [
+    "Ağrı",
+    "Bitlis",
+    "Hakkari",
+    "Siirt",
+    "Şırnak"
+  ],
+  "Yalova": [
+    "Bursa",
+    "Kocaeli"
+  ],
+  "Yozgat": [
+    "Amasya",
+    "Kayseri",
+    "Kırıkkale",
+    "Kırşehir",
+    "Nevşehir",
+    "Sivas",
+    "Tokat",
+    "Çorum"
+  ],
+  "Zonguldak": [
+    "Bartın",
+    "Düzce",
+    "Karabük"
+  ]
+}

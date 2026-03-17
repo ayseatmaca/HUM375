@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Gelişmiş Harita Uygulaması</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg: #0A090D;
+            --panel: #1F1B26;
+            --border: rgba(255, 255, 255, 0.05);
+            --accent: #9A4DFF;
+            --accent2: #2ABB7F;
+            --danger: #FF1430;
+            --warn: #d29922;
+            --text: #ffffff;
+            --muted: #8b949e;
+            --shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            --blue: #0093CD;
+            --pink: #F600DD;
+            --green: #15FF9E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        #topbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 18px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        #topbar h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        #search-wrap {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            max-width: 480px;
+        }
+
+        #search-input {
+            flex: 1;
+            padding: 8px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        #search-input:focus {
+            border-color: var(--accent);
+        }
+
+        #search-input::placeholder {
+            color: var(--muted);
+        }
+
+        .top-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Sora', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0d1117;
+        }
+
+        .btn-primary:hover {
+            background: #79b8ff;
+        }
+
+        .btn-success {
+            background: var(--accent2);
+            color: #0d1117;
+        }
+
+        .btn-success:hover {
+            background: #56d364;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #ff7b72;
+        }
+
+        .btn-neutral {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .btn-neutral:hover {
+            background: #444c56;
+        }
+
+        /* ── MAIN LAYOUT ── */
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR ── */
+        #sidebar {
+            width: 280px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width .3s;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        #sidebar.collapsed {
+            width: 0;
+        }
+
+        #sidebar-header {
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #sidebar-header span {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        #marker-count {
+            background: var(--accent);
+            color: #0d1117;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        #marker-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        #marker-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #marker-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #marker-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .marker-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background .15s;
+            border: 1px solid transparent;
+            margin-bottom: 4px;
+        }
+
+        .marker-item:hover {
+            background: rgba(88, 166, 255, 0.07);
+            border-color: var(--border);
+        }
+
+        .marker-item.active {
+            background: rgba(88, 166, 255, 0.12);
+            border-color: var(--accent);
+        }
+
+        .marker-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .marker-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .marker-info strong {
+            display: block;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .marker-info small {
+            color: var(--muted);
+            font-size: 0.72rem;
+        }
+
+        .marker-del {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: all .15s;
+            font-size: 0.75rem;
+        }
+
+        .marker-del:hover {
+            background: rgba(248, 81, 73, 0.15);
+            color: var(--danger);
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.82rem;
+            padding: 40px 16px;
+            line-height: 1.6;
+        }
+
+        /* Koordinat bilgisi */
+        #coords-panel {
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--muted);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        #coords-panel span {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ── MAP ── */
+        #map {
+            flex: 1;
+            position: relative;
+        }
+
+        /* ── CONTEXT MENU ── */
+        #context-menu {
+            position: fixed;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            z-index: 9999;
+            display: none;
+            min-width: 190px;
+            overflow: hidden;
+            animation: fadeIn .15s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .ctx-label {
+            padding: 8px 14px 6px;
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ctx-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: background .1s;
+        }
+
+        .ctx-item:hover {
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .ctx-item i {
+            width: 14px;
+            text-align: center;
+        }
+
+        .ctx-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        .ctx-danger:hover {
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--danger);
+        }
+
+        /* ── LAYER CONTROL ── */
+        #layer-control {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 800;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow);
+            min-width: 160px;
+        }
+
+        #layer-control h4 {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 8px;
+        }
+
+        .layer-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+
+        .layer-opt input[type="radio"] {
+            accent-color: var(--accent);
+        }
+
+        /* ── MODAL ── */
+        #modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 9998;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal-overlay.open {
+            display: flex;
+        }
+
+        #modal {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            width: 340px;
+            box-shadow: var(--shadow);
+            animation: slideUp .2s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #modal h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.83rem;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .color-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform .15s, border-color .15s;
+        }
+
+        .color-dot:hover,
+        .color-dot.selected {
+            transform: scale(1.15);
+            border-color: #fff;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .modal-btns button {
+            flex: 1;
+        }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 0.83rem;
+            box-shadow: var(--shadow);
+            z-index: 99999;
+            transition: transform .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #toast.success {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        #toast.error {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        #toast.info {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── MINIMAP toggle ── */
+        #sidebar-toggle {
+            position: absolute;
+            left: 290px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 900;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 20px;
+            height: 48px;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: left .3s;
+        }
+
+        #sidebar.collapsed~#sidebar-toggle {
+            left: 0;
+        }
+
+        /* ── SCALE BAR customization ── */
+        .leaflet-control-scale-line {
+            background: rgba(13, 17, 23, 0.85) !important;
+            border-color: var(--border) !important;
+            color: var(--muted) !important;
+        }
+
+        /* ── GPS Button ── */
+        #gps-btn {
+            position: absolute;
+            bottom: 80px;
+            right: 12px;
+            z-index: 800;
+        }
+
+        /* Route panel */
+        #route-panel {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 800;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: none;
+            gap: 10px;
+            align-items: center;
+            box-shadow: var(--shadow);
+            font-size: 0.82rem;
+        }
+
+        #route-panel.visible {
+            display: flex;
+        }
+
+        #route-info {
+            color: var(--accent2);
+            font-weight: 600;
+        }
+
+        .btn-warn {
+            background: var(--warn);
+            color: #0d1117;
+        }
+
+        .btn-warn:hover {
+            background: #e3a936;
+        }
+
+        #tr-dashboard {
+            position: absolute;
+            right: -500px;
+            top: 0;
+            bottom: 0;
+            width: 500px;
+            background: #0A090D;
+            border-left: 1px solid var(--border);
+            z-index: 1000;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.6);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        #tr-dashboard.open {
+            right: 0;
+        }
+
+        /* Abstract Glow Effects */
+        .dash-glow {
+            width: 382px;
+            height: 351px;
+            position: absolute;
+            background: #1F1B26;
+            border-radius: 9999px;
+            filter: blur(85px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glow-1 {
+            top: -150px;
+            right: -150px;
+        }
+
+        .glow-2 {
+            bottom: -150px;
+            left: -150px;
+        }
+
+        @media (max-width: 550px) {
+            #tr-dashboard {
+                width: 100vw;
+                right: -100vw;
+            }
+        }
+
+        .dash-header {
+            font-size: 1.6rem;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            color: white;
+            margin-top: 10px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .dash-card {
+            background: #1F1B26;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            min-height: 110px;
+        }
+
+        .dash-card.full {
+            grid-column: 1 / -1;
+        }
+
+        .dash-card-title {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            z-index: 2;
+        }
+
+        .dash-card-value {
+            color: white;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            z-index: 2;
+        }
+
+        .dash-card-sub {
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 2;
+        }
+
+        .dash-card-icon {
+            position: absolute;
+            right: 15px;
+            bottom: 10px;
+            font-size: 2.5rem;
+            opacity: 0.8;
+            z-index: 1;
+        }
+
+        .demo-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .demo-icon {
+            width: 24px;
+            text-align: center;
+        }
+
+        .demo-label {
+            color: #8b949e;
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .demo-val {
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 80px;
+            margin-bottom: 5px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: #9A4DFF;
+            border-radius: 4px 4px 0 0;
+            min-height: 10px;
+        }
+
+        #dash-borders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .border-chip {
+            background: rgba(154, 77, 255, 0.15);
+            color: #9A4DFF;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(154, 77, 255, 0.3);
+        }
+
+        /* ── TR MAP LOADER ── */
+        #tr-loader {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 17, 23, 0.8);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        #tr-loader i {
+            font-size: 2.5rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ── CUSTOM POPUP THEME ── */
+        .leaflet-popup-content-wrapper,
+        .leaflet-popup-tip {
+            background: var(--panel) !important;
+            color: var(--text) !important;
+            box-shadow: var(--shadow) !important;
+            border-radius: 12px;
+        }
+
+        .leaflet-popup-close-button {
+            color: var(--muted) !important;
+            font-size: 18px !important;
+            padding: 4px !important;
+        }
+
+        .leaflet-popup-close-button:hover {
+            color: var(--text) !important;
+            background: transparent !important;
+        }
+
+        /* ── WEATHER ── */
+        .weather-popup {
+            font-family: 'Sora', sans-serif;
+            min-width: 180px;
+            text-align: center;
+            padding: 4px;
+        }
+
+        .weather-popup h3 {
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .weather-popup .temp {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .weather-popup .details {
+            font-size: 0.85rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-around;
+            margin-top: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .weather-popup .details div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .weather-popup .details i {
+            margin-bottom: 4px;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .temp-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            font-family: 'Sora', sans-serif;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            transition: transform 0.2s;
+            opacity: 0.95;
+        }
+
+        .temp-marker:hover {
+            transform: scale(1.15);
+            z-index: 1000 !important;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOPBAR -->
+    <div id="topbar">
+        <h1>🗺️ HaritaApp</h1>
+        <div id="search-wrap">
+            <input id="search-input" type="text" placeholder="Konum ara... (örn: İstanbul, Ankara)">
+            <button class="top-btn btn-primary" onclick="searchLocation()"><i class="fas fa-search"></i> Ara</button>
+        </div>
+        <button class="top-btn btn-primary" onclick="toggleWeatherMode()"><i class="fas fa-cloud-sun"></i> <span
+                id="weather-label">Hava Durumu</span></button>
+        <button class="top-btn btn-warn" onclick="toggleTemperatureMap()"><i class="fas fa-temperature-high"></i> <span
+                id="temp-map-label">Sıcaklık Haritası</span></button>
+        <button class="top-btn btn-neutral" onclick="toggleTurkeyMode()" style="border: 1px solid var(--accent);"><i
+                class="fas fa-chart-pie" style="color:var(--accent)"></i> <span id="tr-label">TR
+                Göstergesi</span></button>
+        <button class="top-btn btn-success" onclick="getMyLocation()"><i class="fas fa-crosshairs"></i> Konumum</button>
+        <button class="top-btn btn-neutral" onclick="toggleMeasure()"><i class="fas fa-ruler"></i> <span
+                id="measure-label">Ölçüm</span></button>
+        <button class="top-btn btn-danger" onclick="clearAllMarkers()"><i class="fas fa-trash"></i> Temizle</button>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <span>📍 İşaretçiler</span>
+                <span id="marker-count">0</span>
+            </div>
+            <div id="marker-list">
+                <div class="empty-msg">Haritaya sağ tıklayarak<br>veya tıklayarak<br>işaretçi ekleyin.</div>
+            </div>
+            <div id="coords-panel">
+                <div>Fare: <span id="mouse-coords">—</span></div>
+                <div>Zoom: <span id="zoom-level">—</span></div>
+            </div>
+        </div>
+
+        <!-- MAP CONTAINER -->
+        <div id="map">
+            <!-- Layer Control -->
+            <div id="layer-control">
+                <h4>🗂 Harita Katmanı</h4>
+                <label class="layer-opt"><input type="radio" name="layer" value="osm" checked
+                        onchange="switchLayer(this.value)"> Standart</label>
+                <label class="layer-opt"><input type="radio" name="layer" value="satellite"
+                        onchange="switchLayer(this.value)"> Uydu</label>
+                <label class="layer-opt"><input type="radio" name="layer" value="topo"
+                        onchange="switchLayer(this.value)"> Topografik</label>
+                <label class="layer-opt"><input type="radio" name="layer" value="dark"
+                        onchange="switchLayer(this.value)"> Karanlık</label>
+            </div>
+
+            <!-- GPS Button -->
+            <div id="gps-btn">
+                <button class="top-btn btn-neutral" onclick="getMyLocation()"
+                    style="border-radius:50%;width:44px;height:44px;padding:0;font-size:1.1rem;">
+                    <i class="fas fa-location-arrow"></i>
+                </button>
+            </div>
+
+            <!-- Route Panel -->
+            <div id="route-panel">
+                <i class="fas fa-route" style="color:var(--accent)"></i>
+                <span id="route-info">—</span>
+                <button class="top-btn btn-danger" onclick="clearRoute()" style="padding:5px 10px;font-size:0.75rem;">
+                    <i class="fas fa-times"></i> Rotayı Temizle
+                </button>
+            </div>
+
+            <!-- TR MAP LOADER -->
+            <div id="tr-loader">
+                <i class="fas fa-spinner"></i>
+                <div>Harita Yükleniyor...</div>
+            </div>
+
+            <!-- TR DASHBOARD PANEL (RESPONSIVE GRID) -->
+            <div id="tr-dashboard">
+                <button class="dash-close" onclick="closeTurkeyDashboard()"><i class="fas fa-times"></i></button>
+
+                <div class="dash-glow glow-1"></div>
+                <div class="dash-glow glow-2"></div>
+
+                <div class="dash-header" id="dash-city">Şehir Adı İstatistikleri</div>
+
+                <div class="dash-grid">
+                    <!-- Nüfus -->
+                    <div class="dash-card">
+                        <div class="dash-card-title">Tahmini Nüfus</div>
+                        <div class="dash-card-value" id="dash-pop">-</div>
+                        <div class="dash-card-sub" style="color: #15FF9E;">2023 Verisi</div>
+                    </div>
+
+                    <!-- Rakım -->
+                    <div class="dash-card">
+                        <div class="dash-card-title">Rakım</div>
+                        <div class="dash-card-value" id="dash-elev">- m</div>
+                        <div class="dash-card-sub" style="color: #0093CD;">Open-Meteo</div>
+                    </div>
+
+                    <!-- Sıcaklık -->
+                    <div class="dash-card">
+                        <div class="dash-card-title">Anlık Sıcaklık</div>
+                        <div class="dash-card-value" id="dash-temp">- °C</div>
+                        <div class="dash-card-sub" style="color: #F600DD;">Gerçek Zamanlı</div>
+                    </div>
+
+                    <!-- Hava Durumu -->
+                    <div class="dash-card" style="padding-bottom: 5px;">
+                        <div class="dash-card-title">Hava Durumu</div>
+                        <div class="dash-card-value" id="dash-desc" style="font-size:1.3rem;">-</div>
+                        <div class="dash-card-sub" style="color: #15FF9E; margin-bottom:10px;" id="dash-wind">Rüzgar: -
+                        </div>
+                        <i id="dash-icon" class="fas fa-cloud dash-card-icon" style="color: #9A4DFF;"></i>
+                    </div>
+
+                    <!-- Demografikler (Tam Genişlik) -->
+                    <div class="dash-card full">
+                        <div class="dash-card-title" style="margin-bottom: 16px;">Demografik & Sosyal Veriler</div>
+
+                        <div class="demo-row">
+                            <i class="fas fa-users demo-icon" style="color: var(--accent2);"></i>
+                            <span class="demo-label">Nüfus Yoğunluğu (kişi/km²)</span>
+                            <span class="demo-val" id="dash-density">-</span>
+                        </div>
+                        <div class="demo-row">
+                            <i class="fas fa-baby demo-icon" style="color: #F600DD;"></i>
+                            <span class="demo-label">Doğum Oranı (binde)</span>
+                            <span class="demo-val" id="dash-birth">-</span>
+                        </div>
+                        <div class="demo-row">
+                            <i class="fas fa-ribbon demo-icon" style="color: var(--danger);"></i>
+                            <span class="demo-label">Ölüm Oranı (binde)</span>
+                            <span class="demo-val" id="dash-death">-</span>
+                        </div>
+                        <div class="demo-row">
+                            <i class="fas fa-plane-arrival demo-icon" style="color: var(--blue);"></i>
+                            <span class="demo-label">Göç Alma Hızı (binde)</span>
+                            <span class="demo-val" id="dash-imm-in">-</span>
+                        </div>
+                        <div class="demo-row">
+                            <i class="fas fa-plane-departure demo-icon" style="color: var(--warn);"></i>
+                            <span class="demo-label">Göç Verme Hızı (binde)</span>
+                            <span class="demo-val" id="dash-imm-out">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Sıcaklık Grafiği -->
+                    <div class="dash-card full">
+                        <div class="dash-card-title">Sıcaklık Grafiği (Örnek Görsel)</div>
+                        <div class="chart-bars">
+                            <div class="chart-bar" style="height: 100%;"></div>
+                            <div class="chart-bar" style="height: 80%;"></div>
+                            <div class="chart-bar" style="height: 85%;"></div>
+                            <div class="chart-bar" style="height: 60%;"></div>
+                            <div class="chart-bar" style="height: 75%;"></div>
+                            <div class="chart-bar" style="height: 78%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sınır Komşuları -->
+                    <div class="dash-card full">
+                        <div class="dash-card-title" style="margin-bottom: 12px;">Sınır Komşuları</div>
+                        <div id="dash-borders">
+                            <span style="color:#8b949e; font-size: 13px;">-</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEXT MENU -->
+    <div id="context-menu">
+        <div class="ctx-label">Harita İşlemleri</div>
+        <div class="ctx-item" onclick="ctxAddMarker()"><i class="fas fa-map-marker-alt" style="color:var(--accent)"></i>
+            İşaretçi Ekle</div>
+        <div class="ctx-item" onclick="ctxSetRouteFrom()"><i class="fas fa-play" style="color:var(--accent2)"></i>
+            Buradan Rota Başlat</div>
+        <div class="ctx-item" onclick="ctxSetRouteTo()"><i class="fas fa-flag" style="color:var(--warn)"></i> Buraya
+            Rota Bitir</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="ctxGetWeather()"><i class="fas fa-cloud-sun" style="color:var(--accent)"></i>
+            Hava Durumu Göster</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item" onclick="ctxCopyCoords()"><i class="fas fa-copy" style="color:var(--muted)"></i>
+            Koordinatları Kopyala</div>
+        <div class="ctx-item" onclick="ctxOpenStreetView()"><i class="fab fa-google" style="color:var(--muted)"></i>
+            Street View'de Aç</div>
+        <div class="ctx-sep"></div>
+        <div class="ctx-item ctx-danger" onclick="closeContextMenu()"><i class="fas fa-times"></i> Kapat</div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay">
+        <div id="modal">
+            <h3>📍 İşaretçi Ekle</h3>
+            <div class="form-group">
+                <label>Başlık</label>
+                <input id="m-title" type="text" placeholder="Konum adı..." maxlength="50">
+            </div>
+            <div class="form-group">
+                <label>Açıklama</label>
+                <textarea id="m-desc" placeholder="Notlar..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Renk</label>
+                <div class="color-grid" id="color-grid"></div>
+            </div>
+            <div class="modal-btns">
+                <button class="top-btn btn-neutral" onclick="closeModal()">İptal</button>
+                <button class="top-btn btn-primary" onclick="confirmAddMarker()"><i class="fas fa-plus"></i>
+                    Ekle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // ═══════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════
+        let map, currentTile;
+        let markers = [];
+        let pendingLatLng = null;
+        let selectedColor = 'red';
+        let contextLatLng = null;
+        let routeFrom = null, routeTo = null;
+        let routeLine = null;
+        let measureMode = false;
+        let measurePoints = [];
+        let measureLine = null;
+        let measureMarkers = [];
+        let myLocationMarker = null;
+        let activeMarkerId = null;
+        let weatherMode = false;
+        let tempMapMode = false;
+        let tempMarkers = [];
+
+        let trMode = false;
+        let trGeoJsonLayer = null;
+        let activeTrLayer = null;
+
+        // Tahmini nüfus verileri (2023)
+        const TR_POPULATION = {
+            "Adana": "2.274.106", "Adıyaman": "632.459", "Afyonkarahisar": "747.555", "Ağrı": "510.626", "Amasya": "338.267",
+            "Ankara": "5.782.285", "Antalya": "2.688.004", "Artvin": "169.403", "Aydın": "1.148.241", "Balıkesir": "1.257.590",
+            "Bilecik": "228.334", "Bingöl": "282.556", "Bitlis": "353.988", "Bolu": "320.824", "Burdur": "273.799",
+            "Bursa": "3.194.720", "Çanakkale": "559.383", "Çankırı": "195.766", "Çorum": "524.130", "Denizli": "1.056.332",
+            "Diyarbakır": "1.804.880", "Edirne": "414.714", "Elazığ": "591.497", "Erzincan": "239.223", "Erzurum": "749.754",
+            "Eskişehir": "906.617", "Gaziantep": "2.154.051", "Giresun": "450.862", "Gümüşhane": "144.544", "Hakkari": "275.333",
+            "Hatay": "1.686.043", "Isparta": "445.325", "Mersin": "1.916.432", "İstanbul": "15.907.951", "İzmir": "4.462.056",
+            "Kars": "274.829", "Kastamonu": "378.115", "Kayseri": "1.441.523", "Kırklareli": "369.347", "Kırşehir": "244.519",
+            "Kocaeli": "2.079.072", "Konya": "2.296.347", "Kütahya": "580.701", "Malatya": "812.580", "Manisa": "1.468.279",
+            "Kahramanmaraş": "1.177.436", "Mardin": "870.374", "Muğla": "1.048.185", "Muş": "399.202", "Nevşehir": "310.011",
+            "Niğde": "365.419", "Ordu": "763.190", "Rize": "344.016", "Sakarya": "1.080.080", "Samsun": "1.368.488",
+            "Siirt": "331.311", "Sinop": "220.799", "Sivas": "634.924", "Tekirdağ": "1.142.451", "Tokat": "596.454",
+            "Trabzon": "818.023", "Tunceli": "83.645", "Şanlıurfa": "2.170.110", "Uşak": "375.454", "Van": "1.128.749",
+            "Yozgat": "418.442", "Zonguldak": "588.510", "Aksaray": "433.055", "Bayburt": "84.241", "Karaman": "261.610",
+            "Kırıkkale": "277.046", "Batman": "634.491", "Şırnak": "546.589", "Bartın": "203.351", "Ardahan": "92.481",
+            "Iğdır": "203.594", "Yalova": "296.333", "Karabük": "252.058", "Kilis": "147.919", "Osmaniye": "559.405",
+            "Düzce": "405.131"
+        };
+        const TR_BORDERS = { "Adana": ["Hatay", "Kahramanmaraş", "Kayseri", "Mersin", "Niğde", "Osmaniye"], "Adıyaman": ["Diyarbakır", "Gaziantep", "Kahramanmaraş", "Malatya", "Şanlıurfa"], "Afyon": ["Denizli", "Eskişehir", "Isparta", "Konya", "Kütahya", "Uşak"], "Ağrı": ["Bitlis", "Erzurum", "Iğdır", "Kars", "Muş", "Van"], "Aksaray": ["Ankara", "Konya", "Kırşehir", "Nevşehir", "Niğde"], "Amasya": ["Samsun", "Tokat", "Yozgat", "Çorum"], "Ankara": ["Aksaray", "Bolu", "Eskişehir", "Konya", "Kırıkkale", "Kırşehir", "Çankırı"], "Antalya": ["Burdur", "Isparta", "Karaman", "Konya", "Mersin", "Muğla"], "Ardahan": ["Artvin", "Erzurum", "Kars"], "Artvin": ["Ardahan", "Erzurum", "Rize"], "Aydın": ["Denizli", "Manisa", "Muğla", "İzmir"], "Balıkesir": ["Bursa", "Kütahya", "Manisa", "Çanakkale", "İzmir"], "Bartın": ["Karabük", "Kastamonu", "Zonguldak"], "Batman": ["Bitlis", "Diyarbakır", "Mardin", "Siirt"], "Bayburt": ["Erzincan", "Erzurum", "Gümüşhane", "Rize", "Trabzon"], "Bilecik": ["Bolu", "Bursa", "Eskişehir", "Kütahya", "Sakarya"], "Bingöl": ["Diyarbakır", "Elazığ", "Erzincan", "Erzurum", "Muş", "Tunceli"], "Bitlis": ["Ağrı", "Batman", "Muş", "Siirt", "Van"], "Bolu": ["Ankara", "Bilecik", "Düzce", "Eskişehir", "Karabük", "Sakarya"], "Burdur": ["Antalya", "Denizli", "Isparta", "Muğla"], "Bursa": ["Balıkesir", "Bilecik", "Kocaeli", "Kütahya", "Sakarya", "Yalova"], "Çanakkale": ["Balıkesir", "Edirne", "Tekirdağ"], "Çankırı": ["Ankara", "Karabük", "Kastamonu", "Çorum"], "Çorum": ["Amasya", "Kastamonu", "Kırıkkale", "Samsun", "Sinop", "Yozgat", "Çankırı"], "Denizli": ["Afyon", "Aydın", "Burdur", "Manisa", "Muğla", "Uşak"], "Diyarbakır": ["Adıyaman", "Batman", "Bingöl", "Elazığ", "Malatya", "Mardin", "Muş", "Şanlıurfa"], "Düzce": ["Bolu", "Sakarya", "Zonguldak"], "Edirne": ["Kırklareli", "Tekirdağ", "Çanakkale"], "Elazığ": ["Bingöl", "Diyarbakır", "Erzincan", "Malatya", "Tunceli"], "Erzincan": ["Bayburt", "Bingöl", "Elazığ", "Erzurum", "Giresun", "Gümüşhane", "Malatya", "Sivas", "Tunceli"], "Erzurum": ["Ardahan", "Artvin", "Ağrı", "Bayburt", "Bingöl", "Erzincan", "Kars", "Muş", "Rize"], "Eskişehir": ["Afyon", "Ankara", "Bilecik", "Bolu", "Konya", "Kütahya"], "Gaziantep": ["Adıyaman", "Hatay", "Kahramanmaraş", "Kilis", "Osmaniye", "Şanlıurfa"], "Giresun": ["Erzincan", "Gümüşhane", "Ordu", "Sivas", "Trabzon"], "Gümüşhane": ["Bayburt", "Erzincan", "Giresun", "Trabzon"], "Hakkari": ["Van", "Şırnak"], "Hatay": ["Adana", "Gaziantep", "Osmaniye"], "Iğdır": ["Ağrı", "Kars"], "Isparta": ["Afyon", "Antalya", "Burdur", "Konya"], "İstanbul": ["Kocaeli", "Tekirdağ"], "İzmir": ["Aydın", "Balıkesir", "Manisa"], "Kahramanmaraş": ["Adana", "Adıyaman", "Gaziantep", "Kayseri", "Malatya", "Osmaniye", "Sivas"], "Karabük": ["Bartın", "Bolu", "Kastamonu", "Zonguldak", "Çankırı"], "Karaman": ["Antalya", "Konya", "Mersin"], "Kars": ["Ardahan", "Ağrı", "Erzurum", "Iğdır"], "Kastamonu": ["Bartın", "Karabük", "Sinop", "Çankırı", "Çorum"], "Kayseri": ["Adana", "Kahramanmaraş", "Nevşehir", "Niğde", "Sivas", "Yozgat"], "Kilis": ["Gaziantep"], "Kırıkkale": ["Ankara", "Kırşehir", "Yozgat", "Çorum"], "Kırklareli": ["Edirne", "Tekirdağ"], "Kırşehir": ["Aksaray", "Ankara", "Kırıkkale", "Nevşehir", "Yozgat"], "Kocaeli": ["Bursa", "Sakarya", "Yalova", "İstanbul"], "Konya": ["Afyon", "Aksaray", "Ankara", "Antalya", "Eskişehir", "Isparta", "Karaman", "Mersin", "Niğde"], "Kütahya": ["Afyon", "Balıkesir", "Bilecik", "Bursa", "Eskişehir", "Manisa", "Uşak"], "Malatya": ["Adıyaman", "Diyarbakır", "Elazığ", "Erzincan", "Kahramanmaraş", "Sivas"], "Manisa": ["Aydın", "Balıkesir", "Denizli", "Kütahya", "Uşak", "İzmir"], "Mardin": ["Batman", "Diyarbakır", "Şanlıurfa", "Şırnak"], "Mersin": ["Adana", "Antalya", "Karaman", "Konya", "Niğde"], "Muğla": ["Antalya", "Aydın", "Burdur", "Denizli"], "Muş": ["Ağrı", "Bingöl", "Bitlis", "Diyarbakır", "Erzurum"], "Nevşehir": ["Aksaray", "Kayseri", "Kırşehir", "Niğde", "Yozgat"], "Niğde": ["Adana", "Aksaray", "Kayseri", "Konya", "Mersin", "Nevşehir"], "Ordu": ["Giresun", "Samsun", "Sivas", "Tokat"], "Osmaniye": ["Adana", "Gaziantep", "Hatay", "Kahramanmaraş"], "Rize": ["Artvin", "Bayburt", "Erzurum", "Trabzon"], "Sakarya": ["Bilecik", "Bolu", "Bursa", "Düzce", "Kocaeli"], "Samsun": ["Amasya", "Ordu", "Sinop", "Tokat", "Çorum"], "Şanlıurfa": ["Adıyaman", "Diyarbakır", "Gaziantep", "Mardin"], "Siirt": ["Batman", "Bitlis", "Van", "Şırnak"], "Sinop": ["Kastamonu", "Samsun", "Çorum"], "Şırnak": ["Hakkari", "Mardin", "Siirt", "Van"], "Sivas": ["Erzincan", "Giresun", "Kahramanmaraş", "Kayseri", "Malatya", "Ordu", "Tokat", "Yozgat"], "Tekirdağ": ["Edirne", "Kırklareli", "Çanakkale", "İstanbul"], "Tokat": ["Amasya", "Ordu", "Samsun", "Sivas", "Yozgat"], "Trabzon": ["Bayburt", "Giresun", "Gümüşhane", "Rize"], "Tunceli": ["Bingöl", "Elazığ", "Erzincan"], "Uşak": ["Afyon", "Denizli", "Kütahya", "Manisa"], "Van": ["Ağrı", "Bitlis", "Hakkari", "Siirt", "Şırnak"], "Yalova": ["Bursa", "Kocaeli"], "Yozgat": ["Amasya", "Kayseri", "Kırıkkale", "Kırşehir", "Nevşehir", "Sivas", "Tokat", "Çorum"], "Zonguldak": ["Bartın", "Düzce", "Karabük"] };
+        const TR_DEMOGRAPHICS = { "Adana": { "density": 140, "birth": 28.4, "death": 4.2, "imm_in": 18.7, "imm_out": 37.8 }, "Ad\u0131yaman": { "density": 295, "birth": 30.0, "death": 5.9, "imm_in": 21.0, "imm_out": 11.5 }, "Afyonkarahisar": { "density": 261, "birth": 24.7, "death": 4.9, "imm_in": 20.1, "imm_out": 10.9 }, "A\u011fr\u0131": { "density": 422, "birth": 23.9, "death": 4.5, "imm_in": 33.2, "imm_out": 13.9 }, "Amasya": { "density": 117, "birth": 11.2, "death": 4.9, "imm_in": 37.2, "imm_out": 16.5 }, "Ankara": { "density": 413, "birth": 24.0, "death": 6.6, "imm_in": 35.4, "imm_out": 26.6 }, "Antalya": { "density": 356, "birth": 9.9, "death": 8.3, "imm_in": 13.0, "imm_out": 28.5 }, "Artvin": { "density": 276, "birth": 18.7, "death": 5.0, "imm_in": 39.7, "imm_out": 22.5 }, "Ayd\u0131n": { "density": 280, "birth": 28.2, "death": 9.3, "imm_in": 12.2, "imm_out": 25.3 }, "Bal\u0131kesir": { "density": 374, "birth": 23.2, "death": 6.7, "imm_in": 19.8, "imm_out": 39.0 }, "Bilecik": { "density": 205, "birth": 21.0, "death": 7.0, "imm_in": 15.3, "imm_out": 31.7 }, "Bing\u00f6l": { "density": 121, "birth": 21.5, "death": 5.5, "imm_in": 38.9, "imm_out": 30.8 }, "Bitlis": { "density": 424, "birth": 25.0, "death": 8.6, "imm_in": 27.0, "imm_out": 11.2 }, "Bolu": { "density": 356, "birth": 27.3, "death": 6.9, "imm_in": 32.5, "imm_out": 11.7 }, "Burdur": { "density": 295, "birth": 22.3, "death": 9.1, "imm_in": 21.2, "imm_out": 11.7 }, "Bursa": { "density": 407, "birth": 15.0, "death": 9.5, "imm_in": 37.6, "imm_out": 28.2 }, "\u00c7anakkale": { "density": 70, "birth": 29.4, "death": 9.8, "imm_in": 17.6, "imm_out": 38.4 }, "\u00c7ank\u0131r\u0131": { "density": 167, "birth": 28.5, "death": 7.3, "imm_in": 32.5, "imm_out": 19.2 }, "\u00c7orum": { "density": 433, "birth": 21.4, "death": 7.0, "imm_in": 16.0, "imm_out": 15.8 }, "Denizli": { "density": 109, "birth": 28.8, "death": 4.7, "imm_in": 33.5, "imm_out": 12.3 }, "Diyarbak\u0131r": { "density": 60, "birth": 24.8, "death": 7.2, "imm_in": 22.0, "imm_out": 27.0 }, "Edirne": { "density": 315, "birth": 17.1, "death": 6.9, "imm_in": 32.3, "imm_out": 23.3 }, "Elaz\u0131\u011f": { "density": 290, "birth": 16.3, "death": 8.5, "imm_in": 23.1, "imm_out": 33.3 }, "Erzincan": { "density": 367, "birth": 11.4, "death": 6.2, "imm_in": 18.6, "imm_out": 30.4 }, "Erzurum": { "density": 251, "birth": 18.6, "death": 8.6, "imm_in": 20.0, "imm_out": 27.4 }, "Eski\u015fehir": { "density": 43, "birth": 12.3, "death": 7.6, "imm_in": 26.7, "imm_out": 26.9 }, "Gaziantep": { "density": 63, "birth": 21.2, "death": 5.4, "imm_in": 37.2, "imm_out": 28.7 }, "Giresun": { "density": 286, "birth": 12.7, "death": 6.9, "imm_in": 15.9, "imm_out": 31.9 }, "G\u00fcm\u00fc\u015fhane": { "density": 453, "birth": 16.7, "death": 10.0, "imm_in": 21.0, "imm_out": 18.2 }, "Hakkari": { "density": 473, "birth": 12.3, "death": 5.9, "imm_in": 30.7, "imm_out": 23.0 }, "Hatay": { "density": 358, "birth": 17.9, "death": 7.1, "imm_in": 26.6, "imm_out": 12.7 }, "Isparta": { "density": 112, "birth": 12.3, "death": 8.9, "imm_in": 10.5, "imm_out": 19.7 }, "Mersin": { "density": 109, "birth": 10.1, "death": 6.4, "imm_in": 34.4, "imm_out": 20.7 }, "\u0130stanbul": { "density": 3100, "birth": 13.0, "death": 6.9, "imm_in": 37.8, "imm_out": 21.5 }, "\u0130zmir": { "density": 360, "birth": 12.6, "death": 9.6, "imm_in": 20.2, "imm_out": 34.1 }, "Kars": { "density": 22, "birth": 19.5, "death": 8.5, "imm_in": 37.5, "imm_out": 20.2 }, "Kastamonu": { "density": 388, "birth": 18.1, "death": 6.4, "imm_in": 33.7, "imm_out": 10.8 }, "Kayseri": { "density": 424, "birth": 22.4, "death": 5.4, "imm_in": 22.8, "imm_out": 22.0 }, "K\u0131rklareli": { "density": 22, "birth": 17.4, "death": 6.5, "imm_in": 34.6, "imm_out": 17.1 }, "K\u0131r\u015fehir": { "density": 34, "birth": 24.8, "death": 6.0, "imm_in": 30.6, "imm_out": 25.6 }, "Kocaeli": { "density": 550, "birth": 19.6, "death": 7.6, "imm_in": 34.7, "imm_out": 36.9 }, "Konya": { "density": 207, "birth": 16.1, "death": 8.9, "imm_in": 30.3, "imm_out": 25.3 }, "K\u00fctahya": { "density": 399, "birth": 25.8, "death": 4.6, "imm_in": 17.5, "imm_out": 12.2 }, "Malatya": { "density": 240, "birth": 11.2, "death": 6.4, "imm_in": 35.7, "imm_out": 33.4 }, "Manisa": { "density": 122, "birth": 28.2, "death": 9.3, "imm_in": 18.7, "imm_out": 11.0 }, "Kahramanmara\u015f": { "density": 103, "birth": 17.3, "death": 6.4, "imm_in": 18.9, "imm_out": 19.6 }, "Mardin": { "density": 279, "birth": 10.2, "death": 4.4, "imm_in": 26.9, "imm_out": 36.0 }, "Mu\u011fla": { "density": 366, "birth": 12.6, "death": 8.5, "imm_in": 39.4, "imm_out": 32.7 }, "Mu\u015f": { "density": 305, "birth": 12.3, "death": 6.9, "imm_in": 15.5, "imm_out": 34.9 }, "Nev\u015fehir": { "density": 374, "birth": 13.3, "death": 6.0, "imm_in": 11.4, "imm_out": 34.4 }, "Ni\u011fde": { "density": 303, "birth": 27.6, "death": 6.1, "imm_in": 10.6, "imm_out": 25.0 }, "Ordu": { "density": 376, "birth": 13.6, "death": 5.8, "imm_in": 29.5, "imm_out": 24.0 }, "Rize": { "density": 368, "birth": 9.3, "death": 9.0, "imm_in": 35.7, "imm_out": 15.4 }, "Sakarya": { "density": 117, "birth": 10.5, "death": 7.9, "imm_in": 31.5, "imm_out": 29.4 }, "Samsun": { "density": 213, "birth": 15.6, "death": 4.4, "imm_in": 27.7, "imm_out": 39.6 }, "Siirt": { "density": 210, "birth": 23.3, "death": 5.1, "imm_in": 11.9, "imm_out": 24.2 }, "Sinop": { "density": 355, "birth": 11.3, "death": 5.1, "imm_in": 17.3, "imm_out": 23.4 }, "Sivas": { "density": 39, "birth": 10.2, "death": 4.0, "imm_in": 23.9, "imm_out": 23.9 }, "Tekirda\u011f": { "density": 101, "birth": 9.9, "death": 4.8, "imm_in": 28.6, "imm_out": 11.0 }, "Tokat": { "density": 379, "birth": 17.4, "death": 5.1, "imm_in": 31.7, "imm_out": 37.9 }, "Trabzon": { "density": 209, "birth": 22.4, "death": 5.0, "imm_in": 33.6, "imm_out": 19.6 }, "Tunceli": { "density": 178, "birth": 13.5, "death": 10.0, "imm_in": 27.1, "imm_out": 24.1 }, "\u015eanl\u0131urfa": { "density": 86, "birth": 23.6, "death": 5.1, "imm_in": 27.7, "imm_out": 25.0 }, "U\u015fak": { "density": 402, "birth": 29.5, "death": 6.9, "imm_in": 38.1, "imm_out": 26.6 }, "Van": { "density": 456, "birth": 20.8, "death": 5.3, "imm_in": 35.8, "imm_out": 13.1 }, "Yozgat": { "density": 346, "birth": 20.6, "death": 7.1, "imm_in": 37.7, "imm_out": 21.3 }, "Zonguldak": { "density": 447, "birth": 12.7, "death": 7.9, "imm_in": 25.7, "imm_out": 33.9 }, "Aksaray": { "density": 119, "birth": 23.3, "death": 9.1, "imm_in": 19.2, "imm_out": 22.9 }, "Bayburt": { "density": 366, "birth": 18.8, "death": 4.4, "imm_in": 15.4, "imm_out": 13.5 }, "Karaman": { "density": 285, "birth": 17.2, "death": 4.3, "imm_in": 24.6, "imm_out": 24.2 }, "K\u0131r\u0131kkale": { "density": 395, "birth": 27.4, "death": 7.2, "imm_in": 34.6, "imm_out": 16.8 }, "Batman": { "density": 356, "birth": 14.2, "death": 7.2, "imm_in": 23.2, "imm_out": 31.9 }, "\u015e\u0131rnak": { "density": 125, "birth": 17.3, "death": 7.6, "imm_in": 37.1, "imm_out": 23.4 }, "Bart\u0131n": { "density": 27, "birth": 24.3, "death": 7.6, "imm_in": 20.6, "imm_out": 37.2 }, "Ardahan": { "density": 220, "birth": 14.5, "death": 5.8, "imm_in": 18.7, "imm_out": 29.7 }, "I\u011fd\u0131r": { "density": 128, "birth": 26.7, "death": 7.7, "imm_in": 13.3, "imm_out": 15.7 }, "Yalova": { "density": 205, "birth": 21.3, "death": 5.0, "imm_in": 31.1, "imm_out": 24.8 }, "Karab\u00fck": { "density": 133, "birth": 14.2, "death": 5.7, "imm_in": 38.3, "imm_out": 37.1 }, "Kilis": { "density": 438, "birth": 17.9, "death": 9.0, "imm_in": 17.2, "imm_out": 28.7 }, "Osmaniye": { "density": 163, "birth": 11.3, "death": 8.6, "imm_in": 26.3, "imm_out": 23.3 }, "D\u00fczce": { "density": 193, "birth": 13.9, "death": 5.7, "imm_in": 37.4, "imm_out": 10.8 } };
+
+        const COLORS = {
+            red: { hex: '#f85149', label: 'Kırmızı' },
+            blue: { hex: '#58a6ff', label: 'Mavi' },
+            green: { hex: '#3fb950', label: 'Yeşil' },
+            orange: { hex: '#d29922', label: 'Turuncu' },
+            purple: { hex: '#bc8cff', label: 'Mor' },
+            pink: { hex: '#f778ba', label: 'Pembe' },
+            cyan: { hex: '#39d3f2', label: 'Camgöbeği' },
+            white: { hex: '#e6edf3', label: 'Beyaz' },
+        };
+
+        const TILES = {
+            osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            topo: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        };
+
+        const ATTR = '&copy; OpenStreetMap contributors';
+
+        // ═══════════════════════════════════════
+        // INIT MAP
+        // ═══════════════════════════════════════
+        function initMap() {
+            map = L.map('map', {
+                center: [39.925533, 32.866287],
+                zoom: 6,
+                zoomControl: true,
+                contextmenu: false,
+            });
+
+            currentTile = L.tileLayer(TILES.osm, { attribution: ATTR, maxZoom: 19 }).addTo(map);
+
+            // Scale control
+            L.control.scale({ imperial: false, metric: true }).addTo(map);
+
+            // Events
+            map.on('contextmenu', onRightClick);
+            map.on('click', onMapClick);
+            map.on('mousemove', onMouseMove);
+            map.on('zoomend', updateZoom);
+
+            updateZoom();
+            buildColorGrid();
+            loadMarkersFromServer();
+
+            // Kapat context menu
+            document.addEventListener('click', (e) => {
+                if (!document.getElementById('context-menu').contains(e.target)) {
+                    closeContextMenu();
+                }
+            });
+
+            // Enter ile arama
+            document.getElementById('search-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter') searchLocation();
+            });
+        }
+
+        // ═══════════════════════════════════════
+        // MAP EVENTS
+        // ═══════════════════════════════════════
+        function onRightClick(e) {
+            contextLatLng = e.latlng;
+            showContextMenu(e.originalEvent.clientX, e.originalEvent.clientY);
+            L.DomEvent.preventDefault(e);
+        }
+
+        function onMapClick(e) {
+            closeContextMenu();
+
+            if (measureMode) {
+                addMeasurePoint(e.latlng);
+                return;
+            }
+
+            if (weatherMode) {
+                showWeatherPopup(e.latlng);
+                return;
+            }
+        }
+
+        function onMouseMove(e) {
+            const lat = e.latlng.lat.toFixed(5);
+            const lng = e.latlng.lng.toFixed(5);
+            document.getElementById('mouse-coords').textContent = `${lat}, ${lng}`;
+        }
+
+        function updateZoom() {
+            document.getElementById('zoom-level').textContent = map.getZoom();
+        }
+
+        // ═══════════════════════════════════════
+        // LAYER SWITCH
+        // ═══════════════════════════════════════
+        function switchLayer(key) {
+            map.removeLayer(currentTile);
+            currentTile = L.tileLayer(TILES[key], { attribution: ATTR, maxZoom: 19 }).addTo(map);
+            showToast('info', `Katman değiştirildi: ${key}`);
+        }
+
+        // ═══════════════════════════════════════
+        // CONTEXT MENU
+        // ═══════════════════════════════════════
+        function showContextMenu(x, y) {
+            const menu = document.getElementById('context-menu');
+            menu.style.display = 'block';
+            const mw = menu.offsetWidth, mh = menu.offsetHeight;
+            const vw = window.innerWidth, vh = window.innerHeight;
+            menu.style.left = (x + mw > vw ? vw - mw - 8 : x) + 'px';
+            menu.style.top = (y + mh > vh ? vh - mh - 8 : y) + 'px';
+        }
+
+        function closeContextMenu() {
+            document.getElementById('context-menu').style.display = 'none';
+        }
+
+        function ctxAddMarker() {
+            closeContextMenu();
+            pendingLatLng = contextLatLng;
+            openModal();
+        }
+
+        function ctxCopyCoords() {
+            closeContextMenu();
+            if (!contextLatLng) return;
+            const txt = `${contextLatLng.lat.toFixed(6)}, ${contextLatLng.lng.toFixed(6)}`;
+            navigator.clipboard.writeText(txt).then(() => showToast('success', '📋 Koordinatlar kopyalandı!'));
+        }
+
+        function ctxOpenStreetView() {
+            closeContextMenu();
+            if (!contextLatLng) return;
+            const url = `https://www.google.com/maps?q&layer=c&cbll=${contextLatLng.lat},${contextLatLng.lng}`;
+            window.open(url, '_blank');
+        }
+
+        function ctxSetRouteFrom() {
+            closeContextMenu();
+            routeFrom = contextLatLng;
+            showToast('info', '🟢 Rota başlangıcı belirlendi');
+            if (routeFrom && routeTo) drawRoute();
+        }
+
+        function ctxSetRouteTo() {
+            closeContextMenu();
+            routeTo = contextLatLng;
+            showToast('info', '🏁 Rota bitişi belirlendi');
+            if (routeFrom && routeTo) drawRoute();
+        }
+
+        // ═══════════════════════════════════════
+        // MODAL
+        // ═══════════════════════════════════════
+        function buildColorGrid() {
+            const grid = document.getElementById('color-grid');
+            grid.innerHTML = '';
+            Object.entries(COLORS).forEach(([key, val]) => {
+                const d = document.createElement('div');
+                d.className = 'color-dot' + (key === selectedColor ? ' selected' : '');
+                d.style.background = val.hex;
+                d.title = val.label;
+                d.onclick = () => {
+                    selectedColor = key;
+                    document.querySelectorAll('.color-dot').forEach(x => x.classList.remove('selected'));
+                    d.classList.add('selected');
+                };
+                grid.appendChild(d);
+            });
+        }
+
+        function openModal() {
+            document.getElementById('m-title').value = '';
+            document.getElementById('m-desc').value = '';
+            selectedColor = 'red';
+            buildColorGrid();
+            document.getElementById('modal-overlay').classList.add('open');
+            setTimeout(() => document.getElementById('m-title').focus(), 200);
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('open');
+            pendingLatLng = null;
+        }
+
+        function confirmAddMarker() {
+            if (!pendingLatLng) return;
+            const title = document.getElementById('m-title').value.trim() || 'İşaretçi';
+            const desc = document.getElementById('m-desc').value.trim();
+            addMarker(pendingLatLng, title, desc, selectedColor);
+            closeModal();
+        }
+
+        document.getElementById('modal-overlay').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ═══════════════════════════════════════
+        // MARKERS
+        // ═══════════════════════════════════════
+        function makeIcon(color) {
+            const hex = COLORS[color]?.hex || '#f85149';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40">
+        <path d="M14 0C6.27 0 0 6.27 0 14c0 9.63 14 26 14 26S28 23.63 28 14C28 6.27 21.73 0 14 0z" fill="${hex}"/>
+        <circle cx="14" cy="14" r="6" fill="white" opacity="0.9"/>
+    </svg>`;
+            return L.divIcon({
+                html: svg,
+                className: '',
+                iconSize: [28, 40],
+                iconAnchor: [14, 40],
+                popupAnchor: [0, -42],
+            });
+        }
+
+        function addMarker(latlng, title, desc, color) {
+            const id = Date.now();
+            const m = L.marker(latlng, { icon: makeIcon(color), draggable: true }).addTo(map);
+
+            const popupHtml = `
+        <div style="font-family:'Sora',sans-serif;min-width:160px;">
+            <strong style="font-size:0.9rem;">${title}</strong>
+            ${desc ? `<p style="margin:6px 0 0;font-size:0.8rem;color:#8b949e;">${desc}</p>` : ''}
+            <div style="margin-top:10px;display:flex;gap:6px;">
+                <button onclick="deleteMarkerById(${id})"
+                    style="flex:1;padding:5px;background:#f85149;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-family:'Sora',sans-serif;">
+                    🗑 Sil
+                </button>
+                <button onclick="map.closePopup()"
+                    style="flex:1;padding:5px;background:#30363d;color:#e6edf3;border:none;border-radius:6px;cursor:pointer;font-size:0.75rem;font-family:'Sora',sans-serif;">
+                    ✕ Kapat
+                </button>
+            </div>
+        </div>`;
+
+            m.bindPopup(popupHtml, { maxWidth: 240 });
+            m.on('click', () => { highlightSidebarItem(id); });
+
+            // Drag end -> popup güncelle
+            m.on('dragend', function () {
+                const pos = m.getLatLng();
+                const item = markers.find(x => x.id === id);
+                if (item) { item.lat = pos.lat; item.lng = pos.lng; }
+                updateSidebar();
+                showToast('info', '📌 İşaretçi taşındı');
+            });
+
+            const obj = { id, marker: m, title, desc, color, lat: latlng.lat, lng: latlng.lng };
+            markers.push(obj);
+
+            // Server'a kaydet (sunucu çalışıyorsa)
+            saveToServer(obj);
+
+            updateSidebar();
+            showToast('success', `📍 "${title}" eklendi`);
+        }
+
+        function deleteMarkerById(id) {
+            const idx = markers.findIndex(x => x.id === id);
+            if (idx === -1) return;
+            map.closePopup();
+            map.removeLayer(markers[idx].marker);
+            markers.splice(idx, 1);
+            updateSidebar();
+            showToast('info', '🗑 İşaretçi silindi');
+
+            // Server'dan sil
+            fetch(`/api/markers/${id}`, { method: 'DELETE' }).catch(() => { });
+        }
+
+        function clearAllMarkers() {
+            if (markers.length === 0) { showToast('info', 'Silinecek işaretçi yok'); return; }
+            if (!confirm(`${markers.length} işaretçiyi silmek istediğinizden emin misiniz?`)) return;
+            markers.forEach(obj => map.removeLayer(obj.marker));
+            markers = [];
+            updateSidebar();
+            showToast('success', '🧹 Tüm işaretçiler silindi');
+            fetch('/api/markers/clear', { method: 'DELETE' }).catch(() => { });
+        }
+
+        // ═══════════════════════════════════════
+        // SIDEBAR
+        // ═══════════════════════════════════════
+        function updateSidebar() {
+            const list = document.getElementById('marker-list');
+            const count = document.getElementById('marker-count');
+            count.textContent = markers.length;
+
+            if (markers.length === 0) {
+                list.innerHTML = '<div class="empty-msg">Haritaya sağ tıklayarak<br>veya tıklayarak<br>işaretçi ekleyin.</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            markers.forEach(obj => {
+                const item = document.createElement('div');
+                item.className = 'marker-item' + (obj.id === activeMarkerId ? ' active' : '');
+                item.id = `si-${obj.id}`;
+                item.innerHTML = `
+            <div class="marker-dot" style="background:${COLORS[obj.color]?.hex || '#f85149'}"></div>
+            <div class="marker-info">
+                <strong>${obj.title}</strong>
+                <small>${obj.lat.toFixed(4)}, ${obj.lng.toFixed(4)}</small>
+            </div>
+            <button class="marker-del" onclick="event.stopPropagation();deleteMarkerById(${obj.id})" title="Sil">
+                <i class="fas fa-trash-alt"></i>
+            </button>`;
+                item.onclick = () => {
+                    map.setView([obj.lat, obj.lng], Math.max(map.getZoom(), 14));
+                    obj.marker.openPopup();
+                    highlightSidebarItem(obj.id);
+                };
+                list.appendChild(item);
+            });
+        }
+
+        function highlightSidebarItem(id) {
+            activeMarkerId = id;
+            document.querySelectorAll('.marker-item').forEach(el => el.classList.remove('active'));
+            const el = document.getElementById(`si-${id}`);
+            if (el) { el.classList.add('active'); el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+        }
+
+        // ═══════════════════════════════════════
+        // SEARCH
+        // ═══════════════════════════════════════
+        async function searchLocation() {
+            const q = document.getElementById('search-input').value.trim();
+            if (!q) return;
+
+            showToast('info', '🔍 Aranıyor...');
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+                const data = await res.json();
+                if (!data.length) { showToast('error', '❌ Konum bulunamadı'); return; }
+                const { lat, lon, display_name } = data[0];
+                map.setView([parseFloat(lat), parseFloat(lon)], 13);
+                showToast('success', `✅ ${display_name.split(',').slice(0, 2).join(',')}`);
+            } catch (e) {
+                showToast('error', '⚠️ Arama başarısız');
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // GPS / MY LOCATION
+        // ═══════════════════════════════════════
+        function getMyLocation() {
+            if (!navigator.geolocation) { showToast('error', 'Konum desteklenmiyor'); return; }
+            showToast('info', '📡 Konum alınıyor...');
+            navigator.geolocation.getCurrentPosition(pos => {
+                const { latitude: lat, longitude: lng } = pos.coords;
+                if (myLocationMarker) map.removeLayer(myLocationMarker);
+                myLocationMarker = L.circleMarker([lat, lng], {
+                    radius: 10, color: '#58a6ff', fillColor: '#58a6ff', fillOpacity: 0.5, weight: 3
+                }).addTo(map).bindPopup('📍 Konumunuz').openPopup();
+                map.setView([lat, lng], 15);
+                showToast('success', '📍 Konum bulundu!');
+            }, () => { showToast('error', '❌ Konum alınamadı'); });
+        }
+
+        // ═══════════════════════════════════════
+        // ROUTE
+        // ═══════════════════════════════════════
+        function drawRoute() {
+            if (routeLine) map.removeLayer(routeLine);
+            const latlngs = [routeFrom, routeTo];
+            routeLine = L.polyline(latlngs, { color: '#58a6ff', weight: 4, dashArray: '8,6', opacity: 0.9 }).addTo(map);
+            map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+
+            const dist = routeFrom.distanceTo(routeTo);
+            const km = (dist / 1000).toFixed(2);
+            document.getElementById('route-info').textContent = `Kuş uçuşu: ${km} km`;
+            document.getElementById('route-panel').classList.add('visible');
+            showToast('success', `🛤 Rota: ${km} km`);
+        }
+
+        function clearRoute() {
+            if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+            routeFrom = null; routeTo = null;
+            document.getElementById('route-panel').classList.remove('visible');
+            showToast('info', 'Rota temizlendi');
+        }
+
+        // ═══════════════════════════════════════
+        // MEASURE
+        // ═══════════════════════════════════════
+        function toggleMeasure() {
+            measureMode = !measureMode;
+            const label = document.getElementById('measure-label');
+            if (measureMode) {
+                label.textContent = 'Ölçümü Bitir';
+                map.getContainer().style.cursor = 'crosshair';
+                showToast('info', '📏 Haritaya tıklayarak ölçüm yapın. Tekrar tıklayarak noktaları ekleyin.');
+            } else {
+                label.textContent = 'Ölçüm';
+                map.getContainer().style.cursor = '';
+                clearMeasure();
+            }
+        }
+
+        function addMeasurePoint(latlng) {
+            measurePoints.push(latlng);
+            const dot = L.circleMarker(latlng, { radius: 5, color: '#d29922', fillColor: '#d29922', fillOpacity: 1 }).addTo(map);
+            measureMarkers.push(dot);
+
+            if (measureLine) map.removeLayer(measureLine);
+            if (measurePoints.length > 1) {
+                measureLine = L.polyline(measurePoints, { color: '#d29922', weight: 3, dashArray: '6,4' }).addTo(map);
+                const total = measurePoints.reduce((acc, p, i) => i === 0 ? 0 : acc + measurePoints[i - 1].distanceTo(p), 0);
+                const km = (total / 1000).toFixed(3);
+                showToast('info', `📏 Toplam mesafe: ${km} km`);
+            }
+        }
+
+        function clearMeasure() {
+            measurePoints = [];
+            measureMarkers.forEach(m => map.removeLayer(m));
+            measureMarkers = [];
+            if (measureLine) { map.removeLayer(measureLine); measureLine = null; }
+        }
+
+        // ═══════════════════════════════════════
+        // SERVER
+        // ═══════════════════════════════════════
+        async function loadMarkersFromServer() {
+            try {
+                const res = await fetch('/api/markers');
+                const data = await res.json();
+                data.forEach(m => addMarker({ lat: m.lat, lng: m.lng }, m.title, m.description, m.color));
+            } catch (e) { /* standalone mode */ }
+        }
+
+        function saveToServer(obj) {
+            fetch('/api/markers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lat: obj.lat, lng: obj.lng, title: obj.title, description: obj.desc, color: obj.color })
+            }).catch(() => { });
+        }
+
+        // ═══════════════════════════════════════
+        // WEATHER (Open-Meteo)
+        // ═══════════════════════════════════════
+        function toggleWeatherMode() {
+            weatherMode = !weatherMode;
+            const label = document.getElementById('weather-label');
+            if (weatherMode) {
+                label.textContent = 'H. Durumu Kapat';
+                map.getContainer().style.cursor = 'help';
+                showToast('info', '🌤️ Haritaya tıklayarak hava durumunu öğrenebilirsiniz.');
+                if (measureMode) toggleMeasure(); // Disable measure if open
+            } else {
+                label.textContent = 'Hava Durumu';
+                map.getContainer().style.cursor = '';
+            }
+        }
+
+        async function fetchWeather(lat, lng) {
+            showToast('info', '⏳ Hava durumu alınıyor...');
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,wind_speed_10m&timezone=auto`);
+                const data = await res.json();
+                return data.current;
+            } catch (e) {
+                showToast('error', '❌ Hava durumu alınamadı');
+                return null;
+            }
+        }
+
+        function getWeatherIconAndDesc(code, isDay) {
+            const isD = isDay === 1;
+            const w = {
+                0: { icon: isD ? 'fa-sun' : 'fa-moon', desc: 'Açık' },
+                1: { icon: isD ? 'fa-cloud-sun' : 'fa-cloud-moon', desc: 'Çoğunlukla Açık' },
+                2: { icon: isD ? 'fa-cloud-sun' : 'fa-cloud-moon', desc: 'Parçalı Bulutlu' },
+                3: { icon: 'fa-cloud', desc: 'Bulutlu' },
+                45: { icon: 'fa-smog', desc: 'Sisli' },
+                48: { icon: 'fa-smog', desc: 'Kırağılı Sis' },
+                51: { icon: 'fa-cloud-rain', desc: 'Hafif Çisenti' },
+                53: { icon: 'fa-cloud-rain', desc: 'Orta Çisenti' },
+                55: { icon: 'fa-cloud-rain', desc: 'Yoğun Çisenti' },
+                61: { icon: 'fa-cloud-showers-heavy', desc: 'Hafif Yağmur' },
+                63: { icon: 'fa-cloud-showers-heavy', desc: 'Orta Yağmur' },
+                65: { icon: 'fa-cloud-showers-heavy', desc: 'Şiddetli Yağmur' },
+                71: { icon: 'fa-snowflake', desc: 'Hafif Kar' },
+                73: { icon: 'fa-snowflake', desc: 'Orta Kar' },
+                75: { icon: 'fa-snowflake', desc: 'Yoğun Kar' },
+                80: { icon: 'fa-cloud-showers-water', desc: 'Hafif Sağanak' },
+                81: { icon: 'fa-cloud-showers-water', desc: 'Orta Sağanak' },
+                82: { icon: 'fa-cloud-showers-water', desc: 'Şiddetli Sağanak' },
+                95: { icon: 'fa-bolt-lightning', desc: 'Fırtına' },
+                96: { icon: 'fa-cloud-bolt', desc: 'Fırtına ve Dolu' },
+                99: { icon: 'fa-cloud-bolt', desc: 'Şiddetli Fırtına ve Dolu' }
+            };
+            return w[code] || { icon: 'fa-cloud', desc: 'Bilinmeyen' };
+        }
+
+        async function showWeatherPopup(latlng) {
+            const lat = latlng.lat;
+            const lng = latlng.lng;
+            const current = await fetchWeather(lat, lng);
+            if (!current) return;
+
+            const wd = getWeatherIconAndDesc(current.weather_code, current.is_day);
+
+            let city = "Seçilen Konum";
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`);
+                const locData = await res.json();
+                if (locData && locData.address) {
+                    city = locData.address.city || locData.address.town || locData.address.village || locData.address.county || city;
+                }
+            } catch (e) { }
+
+            const popupHtml = `
+        <div class="weather-popup">
+            <h3>${city}</h3>
+            <div><i class="fas ${wd.icon}" style="font-size:3.5rem;color:var(--accent2);margin-bottom:12px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));"></i></div>
+            <div class="temp">${current.temperature_2m}°C</div>
+            <div style="font-size:0.95rem;margin-bottom:12px;font-weight:600;">${wd.desc}</div>
+            <div class="details">
+                <div>
+                    <i class="fas fa-wind" style="color:var(--accent);"></i>
+                    <span>${current.wind_speed_10m} km/s</span>
+                </div>
+                <div>
+                    <i class="fas fa-tint" style="color:#39d3f2;"></i>
+                    <span>%${current.relative_humidity_2m}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+            L.popup({ className: 'custom-weather-popup' })
+                .setLatLng(latlng)
+                .setContent(popupHtml)
+                .openOn(map);
+
+            showToast('success', '✅ Hava durumu yüklendi');
+        }
+
+        function ctxGetWeather() {
+            closeContextMenu();
+            if (!contextLatLng) return;
+            showWeatherPopup(contextLatLng);
+        }
+
+        // ═══════════════════════════════════════
+        // TEMPERATURE MAP
+        // ═══════════════════════════════════════
+        function getTemperatureColor(temp) {
+            if (temp <= -10) return '#313695';
+            if (temp <= 0) return '#4575b4';
+            if (temp <= 10) return '#74add1';
+            if (temp <= 15) return '#abd9e9';
+            if (temp <= 20) return '#e0f3f8';
+            if (temp <= 25) return '#fee090';
+            if (temp <= 30) return '#fdae61';
+            if (temp <= 35) return '#f46d43';
+            return '#d73027';
+        }
+
+        async function toggleTemperatureMap() {
+            tempMapMode = !tempMapMode;
+            const label = document.getElementById('temp-map-label');
+
+            if (tempMapMode) {
+                label.textContent = 'Sıcaklığı Temizle';
+                showToast('info', '⏳ Sıcaklık haritası yükleniyor...');
+                await generateTemperatureGrid();
+            } else {
+                label.textContent = 'Sıcaklık Haritası';
+                clearTemperatureGrid();
+            }
+        }
+
+        function clearTemperatureGrid() {
+            tempMarkers.forEach(m => map.removeLayer(m));
+            tempMarkers = [];
+            showToast('info', '🧹 Sıcaklık haritası temizlendi');
+        }
+
+        async function generateTemperatureGrid() {
+            clearTemperatureGrid();
+            const bounds = map.getBounds();
+            const north = bounds.getNorth();
+            const south = bounds.getSouth();
+            const east = bounds.getEast();
+            const west = bounds.getWest();
+
+            const steps = 6;
+            const latStep = (north - south) / steps;
+            const lngStep = (east - west) / steps;
+
+            const points = [];
+            for (let i = 0; i <= steps; i++) {
+                for (let j = 0; j <= steps; j++) {
+                    points.push({ lat: south + latStep * i, lng: west + lngStep * j });
+                }
+            }
+
+            try {
+                const latsParam = points.map(p => p.lat.toFixed(4)).join(',');
+                const lngsParam = points.map(p => p.lng.toFixed(4)).join(',');
+
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latsParam}&longitude=${lngsParam}&current=temperature_2m&timezone=auto`);
+                const data = await res.json();
+
+                const responses = Array.isArray(data) ? data : [data];
+
+                responses.forEach((locData, idx) => {
+                    if (locData.current && typeof locData.current.temperature_2m !== 'undefined') {
+                        const temp = locData.current.temperature_2m;
+                        const point = points[idx];
+                        const color = getTemperatureColor(temp);
+
+                        const iconHtml = `<div class="temp-marker" style="background-color: ${color}; width: 38px; height: 38px;">${Math.round(temp)}°</div>`;
+                        const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [38, 38], iconAnchor: [19, 19] });
+
+                        const marker = L.marker([point.lat, point.lng], { icon: icon, interactive: false }).addTo(map);
+                        tempMarkers.push(marker);
+                    }
+                });
+
+                showToast('success', '🌡️ Sıcaklık haritası güncellendi');
+            } catch (e) {
+                showToast('error', '❌ Sıcaklık yüklenirken hata oluştu (API kotası dolu olabilir)');
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // TURKEY DASHBOARD TR MODE
+        // ═══════════════════════════════════════
+
+        async function toggleTurkeyMode() {
+            trMode = !trMode;
+            const label = document.getElementById('tr-label');
+
+            if (trMode) {
+                label.textContent = 'TR Çıkış';
+                if (weatherMode) toggleWeatherMode();
+                if (measureMode) toggleMeasure();
+
+                document.getElementById('tr-loader').style.display = 'flex';
+
+                try {
+                    // Fetch raw geojson from alpers github repo
+                    const res = await fetch('https://raw.githubusercontent.com/alpers/Turkey-Maps-GeoJSON/master/tr-cities.json');
+                    const data = await res.json();
+
+                    trGeoJsonLayer = L.geoJSON(data, {
+                        style: {
+                            color: '#9A4DFF',
+                            weight: 1,
+                            opacity: 0.4,
+                            fillColor: '#1F1B26',
+                            fillOpacity: 0.3
+                        },
+                        onEachFeature: (feature, layer) => {
+                            layer.on({
+                                mouseover: (e) => {
+                                    if (activeTrLayer !== e.target) {
+                                        e.target.setStyle({ fillOpacity: 0.6, fillColor: '#9A4DFF', opacity: 0.8 });
+                                    }
+                                },
+                                mouseout: (e) => {
+                                    if (activeTrLayer !== e.target) {
+                                        trGeoJsonLayer.resetStyle(e.target);
+                                    }
+                                },
+                                click: (e) => {
+                                    if (activeTrLayer) {
+                                        trGeoJsonLayer.resetStyle(activeTrLayer);
+                                    }
+                                    activeTrLayer = e.target;
+                                    e.target.setStyle({ fillColor: '#2ABB7F', fillOpacity: 0.8, color: '#15FF9E', weight: 2, opacity: 1 });
+
+                                    openTurkeyDashboard(feature, e.latlng);
+                                }
+                            });
+                        }
+                    }).addTo(map);
+
+                    map.fitBounds(trGeoJsonLayer.getBounds(), { padding: [20, 20] });
+                    showToast('success', '🇹🇷 Türkiye haritası yüklendi');
+
+                } catch (e) {
+                    showToast('error', '❌ Harita yüklenemedi. Lütfen internet bağlantınızı kontrol edin.');
+                    trMode = false;
+                    label.textContent = 'TR Göstergesi';
+                } finally {
+                    document.getElementById('tr-loader').style.display = 'none';
+                }
+
+            } else {
+                label.textContent = 'TR Göstergesi';
+                if (trGeoJsonLayer) {
+                    map.removeLayer(trGeoJsonLayer);
+                    trGeoJsonLayer = null;
+                }
+                activeTrLayer = null;
+                closeTurkeyDashboard();
+            }
+        }
+
+        async function openTurkeyDashboard(feature, latlng) {
+            const dash = document.getElementById('tr-dashboard');
+
+            // Prevent Leaflet from intercepting scroll events so the panel can scroll natively
+            L.DomEvent.disableScrollPropagation(dash);
+            L.DomEvent.disableClickPropagation(dash);
+
+            const name = feature.properties.name || "Bilinmiyor";
+
+            // Set static UI text
+            document.getElementById('dash-city').textContent = name + " İli İstatistikleri";
+            document.getElementById('dash-pop').textContent = TR_POPULATION[name] || "-";
+            document.getElementById('dash-elev').textContent = "...";
+            document.getElementById('dash-temp').textContent = "...";
+            document.getElementById('dash-desc').textContent = "...";
+
+            // Populate Demographics
+            const demogs = TR_DEMOGRAPHICS[name] || {};
+            document.getElementById('dash-density').textContent = demogs.density ? demogs.density : '-';
+            document.getElementById('dash-birth').textContent = demogs.birth ? demogs.birth : '-';
+            document.getElementById('dash-death').textContent = demogs.death ? demogs.death : '-';
+            document.getElementById('dash-imm-in').textContent = demogs.imm_in ? demogs.imm_in : '-';
+            document.getElementById('dash-imm-out').textContent = demogs.imm_out ? demogs.imm_out : '-';
+
+            // Populate borders
+            const bordersContainer = document.getElementById('dash-borders');
+            bordersContainer.innerHTML = '';
+            const borders = TR_BORDERS[name] || [];
+            if (borders.length === 0) {
+                bordersContainer.innerHTML = '<span style="color:#8b949e; font-size: 13px;">Sınır komşusu bulunamadı</span>';
+            } else {
+                borders.forEach(b => {
+                    const span = document.createElement('span');
+                    span.textContent = b;
+                    span.style.cssText = 'background: rgba(154, 77, 255, 0.15); color: #9A4DFF; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; border: 1px solid rgba(154, 77, 255, 0.3);';
+                    bordersContainer.appendChild(span);
+                });
+            }
+
+            // Slide it in
+            dash.classList.add('open');
+
+            // Attempt to center via bounds
+            const center = latlng; // fallback to click pos
+            const lat = center.lat;
+            const lng = center.lng;
+
+            try {
+                // Fetch elevetion and weather from open meteo in a single call using true coordinates of click
+                const res = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lng}`);
+                const elevData = await res.json();
+
+                // Parallel weather
+                const weather = await fetchWeather(lat, lng);
+
+                if (elevData && elevData.elevation && elevData.elevation.length > 0) {
+                    document.getElementById('dash-elev').textContent = `${Math.round(elevData.elevation[0])} m`;
+                } else {
+                    document.getElementById('dash-elev').textContent = "Bilinmiyor";
+                }
+
+                if (weather) {
+                    document.getElementById('dash-temp').textContent = `${weather.temperature_2m} °C`;
+                    document.getElementById('dash-wind').textContent = `Rüzgar: ${weather.wind_speed_10m} km/s`;
+
+                    const wd = getWeatherIconAndDesc(weather.weather_code, weather.is_day);
+                    document.getElementById('dash-desc').textContent = wd.desc;
+
+                    const iconEl = document.getElementById('dash-icon');
+                    iconEl.className = `fas ${wd.icon}`;
+                    // Adjust color for aesthetics based on code
+                    if (wd.icon.includes('sun')) iconEl.style.color = '#d29922';
+                    else if (wd.icon.includes('rain') || wd.icon.includes('showers')) iconEl.style.color = '#0093CD';
+                    else if (wd.icon.includes('snow')) iconEl.style.color = 'white';
+                    else iconEl.style.color = '#15FF9E';
+                }
+            } catch (e) {
+                showToast('error', 'Veriler alınırken hata yaşandı');
+                console.error(e);
+            }
+        }
+
+        function closeTurkeyDashboard() {
+            document.getElementById('tr-dashboard').classList.remove('open');
+            if (activeTrLayer && trGeoJsonLayer) {
+                trGeoJsonLayer.resetStyle(activeTrLayer);
+                activeTrLayer = null;
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // TOAST
+        // ═══════════════════════════════════════
+        let toastTimer;
+        function showToast(type, msg) {
+            const t = document.getElementById('toast');
+            t.className = `show ${type}`;
+            t.innerHTML = msg;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.className = '', 3000);
+        }
+
+        // ═══════════════════════════════════════
+        // START
+        // ═══════════════════════════════════════
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+
+</html>
