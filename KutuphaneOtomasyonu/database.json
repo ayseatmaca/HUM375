@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "title": "Suç ve Ceza",
+    "author": "Fyodor Dostoyevski",
+    "year": "1866",
+    "isbn": "9786053327349",
+    "genre": "Roman",
+    "cover": "https://covers.openlibrary.org/b/isbn/9786053327349-L.jpg"
+  },
+  {
+    "id": 2,
+    "title": "1984",
+    "author": "George Orwell",
+    "year": "1949",
+    "isbn": "9780451524935",
+    "genre": "Bilim Kurgu",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780451524935-L.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Bülbülü Öldürmek",
+    "author": "Harper Lee",
+    "year": "1960",
+    "isbn": "9780060935467",
+    "genre": "Roman",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780060935467-L.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Harry Potter ve Felsefe Taşı",
+    "author": "J.K. Rowling",
+    "year": "1997",
+    "isbn": "9780747532743",
+    "genre": "Roman",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780747532743-L.jpg"
+  },
+  {
+    "id": 5,
+    "title": "Sefiller",
+    "author": "Victor Hugo",
+    "year": "1862",
+    "isbn": "9780451419439",
+    "genre": "Tarih",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780451419439-L.jpg"
+  },
+  {
+    "id": 6,
+    "title": "Hayvan Çiftliği",
+    "author": "George Orwell",
+    "year": "1945",
+    "isbn": "9780451526342",
+    "genre": "Roman",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780451526342-L.jpg"
+  },
+  {
+    "id": 7,
+    "title": "Hobbit",
+    "author": "J.R.R. Tolkien",
+    "year": "1937",
+    "isbn": "9780547928227",
+    "genre": "Bilim Kurgu",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780547928227-L.jpg"
+  },
+  {
+    "id": 8,
+    "title": "Simyacı",
+    "author": "Paulo Coelho",
+    "year": "1988",
+    "isbn": "9780062315007",
+    "genre": "Felsefe",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780062315007-L.jpg"
+  },
+  {
+    "id": 1776970167567.7358,
+    "title": "The Giver",
+    "author": "Lois Lowry",
+    "year": "1993",
+    "isbn": "060628608X",
+    "genre": "",
+    "cover": "https://covers.openlibrary.org/b/isbn/060628608X-L.jpg"
+  },
+  {
+    "id": 1776970171142.5654,
+    "title": "The Tempest",
+    "author": "William Shakespeare",
+    "year": "1611",
+    "isbn": "9780563535393",
+    "genre": "Bilim Kurgu",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780563535393-L.jpg"
+  },
+  {
+    "id": 1776970529225.8953,
+    "title": "Romeo and Juliet",
+    "author": "William Shakespeare",
+    "year": "1597",
+    "isbn": "9780451507969",
+    "genre": "Tarih",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780451507969-L.jpg"
+  },
+  {
+    "id": 1776970802665.1462,
+    "title": "The Giver",
+    "author": "Lois Lowry",
+    "year": "1993",
+    "isbn": "060628608X",
+    "genre": "Teknik",
+    "cover": "https://covers.openlibrary.org/b/isbn/060628608X-L.jpg"
+  },
+  {
+    "id": 1776970815049.8027,
+    "title": "As You Like It",
+    "author": "William Shakespeare",
+    "year": "1734",
+    "isbn": "9780804910064",
+    "genre": "Roman",
+    "cover": "https://covers.openlibrary.org/b/isbn/9780804910064-L.jpg"
+  },
+  {
+    "id": 1776970876667.5896,
+    "title": "Óliver y Patch",
+    "author": "Claire Freedman",
+    "year": "2015",
+    "isbn": "978",
+    "genre": "Bilim Kurgu",
+    "cover": "https://covers.openlibrary.org/b/isbn/978-L.jpg"
+  }
+]
